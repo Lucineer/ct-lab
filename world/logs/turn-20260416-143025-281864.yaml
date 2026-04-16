@@ -1,0 +1,7 @@
+action: result
+agent: jc1
+result:
+  hyp_id: researcher-20260416-142848
+  passed: true
+  status: confirmed
+timestamp: '2026-04-16T14:30:25.281848+00:00'

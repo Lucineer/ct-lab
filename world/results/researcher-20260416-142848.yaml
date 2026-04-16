@@ -1,0 +1,12 @@
+details:
+  experiment: flux-emergence-research/experiment-perception-dcs.cu
+  gpu: sm_87
+  lift_large_grab: 1.1
+  lift_small_grab: 4.2
+  ratio: 3.8
+  threshold: 1.5
+hypothesis: DCS benefit is inversely proportional to perception range
+hypothesis_id: researcher-20260416-142848
+status: confirmed
+timestamp: '2026-04-16T14:30:25.276807+00:00'
+validated_by: jc1

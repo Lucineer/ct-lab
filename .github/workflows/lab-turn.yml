@@ -1,0 +1,17 @@
+name: Lab Turn
+on:
+  push:
+    paths: ['world/commands/**']
+    branches: [master, main]
+jobs:
+  process:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 bridges/lab_engine.py --world-dir world
+      - run: |
+          git config user.name "Lab Engine"
+          git config user.email "lab@plato.local"
+          git add -A
+          git diff --staged --quiet || git commit -m "Lab turn: $(date -u +%Y%m%d-%H%M%S)"
+          git push

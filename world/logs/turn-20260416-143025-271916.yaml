@@ -1,0 +1,8 @@
+action: hypothesize
+agent: researcher
+result:
+  errors:
+  - "Absolute 'always' \u2014 use specific conditions"
+  hyp_id: researcher-20260416-143025
+  passed: false
+timestamp: '2026-04-16T14:30:25.271899+00:00'

@@ -1,0 +1,25 @@
+agent: researcher
+claim: DCS benefit is inversely proportional to perception range
+conditions:
+  agents: 512
+  dcs_enabled:
+  - true
+  - false
+  food_count: 500
+  perception_range:
+  - 6
+  - 8
+  - 12
+  - 16
+  - 24
+  - 32
+expected: DCS lift higher at small perception range
+experiment_path: world/experiments/researcher-20260416-141742.cu
+gate_errors: []
+gates_passed: true
+id: researcher-20260416-141742
+result: null
+status: experiment_ready
+submitted: '2026-04-16T14:17:42.495785+00:00'
+threshold: 1.5
+validated: null

@@ -1,0 +1,12 @@
+agent: researcher
+claim: DCS always improves fitness
+conditions:
+  agents: 256
+expected: universal improvement
+gate_errors:
+- "Absolute 'always' \u2014 use specific conditions"
+gates_passed: false
+id: researcher-20260416-143025
+status: rejected
+submitted: '2026-04-16T14:30:25.269169+00:00'
+threshold: 1.0
