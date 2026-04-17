@@ -1,0 +1,147 @@
+# Deep Research: Tiling Knowledge Substrate
+
+# **The Tiling Knowledge Substrate: A Deep Architectural Analysis**
+
+## **Abstract**
+This document investigates the concept of a **Tiling Knowledge Substrate**, a system for dynamically presenting information to an AI agent (or human) by breaking a monolithic document into overlapping, semantically-coherent "tiles." The core thesis is that cognitive performance is optimized not by exposure to an entire corpus, but by the runtime injection of precise, contextually-relevant chunks. This analysis covers optimal tile sizing for cognitive tasks, boundary-loss prevention via overlap, dynamic position-tracking mechanisms, theoretical compression efficiency, integration with existing tile-matching systems, and concludes with a concrete, implementable tiling algorithm.
+
+---
+
+## **1. Foundational Principles: Why Tile?**
+
+The monolithic document is a legacy of physical media. In digital, interactive, and agentic contexts, it imposes significant cognitive overhead:
+*   **Irrelevant Context:** An agent solving a specific sub-problem must parse and filter vast amounts of unrelated data.
+*   **Working Memory Overload:** Human cognitive load theory (Sweller, 1988) and analogous LLM context window limitations highlight the penalty for excessive, simultaneous information.
+*   **Poor Retrieval Precision:** Navigating a long document for a specific piece of information is inefficient.
+
+Tiling transforms a static document into a **navigable substrate**. The agent's "position" (a syntactic or semantic pointer) determines which tiles are "illuminated" and injected into its working context. This is akin to a spotlight on a vast stage, revealing only the actors and props relevant to the current scene.
+
+## **2. Optimal Tile Size for Cognitive Tasks**
+
+Tile size is not one-size-fits-all; it is a function of the **unit of cognitive operation**.
+
+*   **Diagnostic/Procedural Tasks (Smaller Tiles, 1-3 paragraphs):**
+    *   **Task Profile:** Debugging code, following a technical checklist, answering a precise factual query.
+    *   **Optimal Tile:** Tightly scoped to a single step, error code explanation, parameter definition, or condition. A tile might be `## Parameter: ` followed by its description and valid range. This minimizes "noise" and allows rapid, sequential focusing.
+    *   **Cognitive Basis:** Mirrors the "chunking" of procedural memory. The agent executes a step, receives immediate, precise information for the next step, and proceeds.
+
+*   **Analytical/Research Tasks (Medium Tiles, 2-5 paragraphs):**
+    *   **Task Profile:** Comparing concepts, synthesizing arguments, understanding a module's architecture.
+    *   **Optimal Tile:** Encompasses a complete logical unit. In Markdown, this is typically a `##` or `###` header section that presents one core idea, its evidence, and a concluding remark. For example, `## Benefits of Tiling` and its supporting paragraphs.
+    *   **Cognitive Basis:** Aligns with the capacity of working memory to hold and manipulate a single, complex idea or relationship (Cowan's "magical number 4").
+
+*   **Creative/Generative Tasks (Larger Tiles or Strategic Multi-Tiling):**
+    *   **Task Profile:** Writing a chapter, designing a system, brainstorming a strategy.
+    *   **Optimal Strategy:** Here, the agent needs **semantic adjacency** and **thematic breadth**. The system might inject the active tile (`## Character Development`) *plus* the tiles for preceding and following chapters, or all tiles under a part header (`# Part II: The Conflict`). Tile size is larger, but the selection is strategic, not just positional.
+    *   **Cognitive Basis:** Supports associative thinking and conceptual blending by providing a richer, but still bounded, semantic field.
+
+**Conclusion:** The system should allow for **adaptive tile granularity**. The default is header-defined semantic units (`##`), but the runtime can dynamically cluster smaller tiles for analytical tasks or sub-divide larger ones for procedural work based on agent intent or query type.
+
+## **3. Overlapping Tiles: Preventing Context Loss at Boundaries**
+
+A hard boundary between tiles creates a "seam" where context is lost. Consider a tile ending with "This leads to the following conclusion:" and the next tile beginning with "Therefore, the model is valid." In isolation, the second tile is cryptic.
+
+Two primary overlap strategies mitigate this:
+
+### **A. Sliding Window (Syntactic Overlap)**
+*   **Mechanism:** A fixed-token or paragraph-based window that advances through the document, with consecutive windows sharing a percentage of content (e.g., 10-15%).
+*   **Pros:** Simple, uniform, and effective for linear navigation. Guarantees continuity.
+*   **Cons:** Can be semantically naive. May overlap irrelevant text and waste context space. It's a mechanical solution.
+
+### **B. Hierarchical/Semantic Overlap (Recommended)**
+*   **Mechanism:** Overlap is generated by the document's inherent hierarchy. A tile defined by header `### 2.1` includes not only its own content but also:
+    1.  **Parent Context:** The title of its parent section (`## 2. Methodology`).
+    2.  **Sibling & Child Anchors:** The final sentence/line of the previous tile (`### 2.0`) and the header of the next tile (`### 2.2`).
+    3.  **Key Sentence Carry-Forward:** The core topic sentence from the previous tile's conclusion.
+*   **Pros:** Semantically intelligent. The overlap is pure signal—headers and key transitions—minimizing waste. It reinforces the document's logical structure.
+*   **Cons:** More complex to generate, requiring semantic parsing to identify "key sentences."
+
+**Implementation Choice:** For a Markdown-based system, **Hierarchical Overlap** is superior. The structure is explicit. A tile's metadata should include pointers to its `parent_id`, `previous_sibling_id`, and `next_sibling_id`. The runtime can then optionally prepend/append content from these related tiles to create a fluid reading experience.
+
+## **4. Position-Tracking Mechanisms**
+
+The runtime must know the agent's "position" in the prose to select tiles. This is not just a scrollbar percentage. It's a multi-modal tracking system.
+
+*   **1. Keyword & Entity Anchors:**
+    *   **How:** Each tile is indexed for salient keywords, named entities, and code symbols. When the agent's query or generated text contains a match, the corresponding tile is activated.
+    *   **Example:** Agent mentions `function `, the tile containing that function's definition is injected.
+
+*   **2. Semantic Breadcrumbs (Embedding Proximity):**
+    *   **How:** Each tile has a dense vector embedding. The agent's recent context (last 2-3 turns) is also embedded. The tile whose embedding is closest in vector space (cosine similarity) is considered the current "semantic position."
+    *   **Strength:** Handles paraphrasing and conceptual queries beautifully.
+
+*   **3. Explicit Position Markers:**
+    *   **How:** The agent or interface can explicitly set a marker, e.g., `{{jump_to: "## Installation"}}` or `{{current_focus: tile_42}}`. This is direct and unambiguous.
+
+*   **4. Sequential/Conversational Flow:**
+    *   **How:** The system assumes linear progression. Completing a task defined in `Tile A` probabilistically moves the focus to `Tile B`, especially if `B` is the `next_sibling` of `A`. This can be driven by simple rules or a learned state machine.
+
+**Robust System:** A production system should use all four in a weighted ensemble. **Explicit Markers** override everything. Then, **Keyword Anchors** provide precise jumps. **Semantic Breadcrumbs** maintain soft, contextual focus. **Sequential Flow** provides a default.
+
+## **5. Theoretical Compression Ratio**
+
+Compression here is defined as the reduction in token count presented to the agent versus the full document.
+
+*   **Variables:**
+    *   `D`: Total tokens in document.
+    *   `T_avg`: Average token size of a tile (including overlap).
+    *   `N`: Number of tiles active at once (typically 1-3).
+
+*   **Simple Model:** `Compression Ratio = D / (N * T_avg)`
+*   **Example:** A 10,000-token document, tiled into 50 tiles of ~200 tokens each. If the runtime injects 2 tiles (active + overlap), the agent sees ~400 tokens.
+    *   **Ratio:** 10,000 / 400 = **25x**.
+    *   **Context Window Savings:** In an LLM with a 8k context window, you've used only 5% of it for the document, freeing 95% for reasoning, tools, and conversation history.
+
+*   **Real-World Adjustments:**
+    *   **Overhead:** Metadata and overlap reduce the ratio. Hierarchical overlap adds less overhead than sliding windows.
+    *   **Burst Loads:** During creative tasks, `N` may increase to 5-6 tiles, lowering the instantaneous ratio but still providing significant savings over the full doc.
+    *   **Theoretical Limit:** The optimal ratio is bounded by the need for coherent context. You cannot infinitely subdivide. In practice, sustained ratios of 10x-30x for linear tasks are achievable.
+
+## **6. Interaction with PLATO's Tile-Matching System**
+
+PLATO (Prescribed Lexical Attachment & Task Organization) presumably uses tiles as immutable knowledge units that are matched against queries. The Tiling Knowledge Substrate can be its **front-end ingestion and dynamic presentation layer**.
+
+*   **Synergy:** The Tiling Algorithm (below) becomes the **preprocessor** for PLATO.
+    1.  **Ingestion:** The algorithm chunks a new Markdown doc into semantic tiles, each becoming a "knowledge unit" in PLATO's repository with rich metadata.
+    2.  **Static Matching:** For a direct Q&A, PLATO uses its similarity search to find the best-match tile(s) for a user query, as it does now.
+    3.  **Dynamic Navigation:** During a long-running agent task, the **Position-Tracking** system (Section 4) *generates implicit queries*. Instead of a user asking "What is function X?", the agent's context containing `function ` triggers the same retrieval mechanism, dynamically pulling in the `function ` tile. PLATO's matching system is thus driven not just by user intent, but by the agent's **situational context**.
+
+*   **Enhancement:** This substrate adds a **stateful, positional layer** to PLATO's stateless retrieval. It tells PLATO not just *what* is relevant, but *where the agent is* in the narrative/document structure, enabling more coherent multi-step assistance.
+
+---
+
+## **7. Design: The Tiling Algorithm**
+
+**Objective:** Transform a Markdown document into a linked list of overlapping semantic tiles.
+
+**Input:** A Markdown document (string).
+**Output:** A list of `Tile` objects with hierarchical metadata and overlap directives.
+
+**Data Structure:**
+```python
+class Tile:
+    id: str                 # e.g., "tile_2_1_3" (section numbers)
+    header: str            # The full text of the defining header (e.g., "### 2.1.3 Core Algorithm")
+    header_level: int      # 2 for ##, 3 for ###, etc.
+    content: str          # The plain text content of this section (paragraphs, lists, code under this header).
+    tokens: int           # Approximate token count of content.
+    start_pos: int        # Character index in source doc.
+    end_pos: int
+    parent_id: str        # ID of the parent header's tile (None for h1).
+    previous_sibling_id: str  # ID of tile at same level immediately before.
+    next_sibling_id: str     # ID of tile at same level immediately after.
+    child_ids: List[str]  # IDs of tiles with this as parent.
+    overlap_context: dict # Computed: {'parent_summary': str, 'prev_topic': str, 'next_header': str}
+```
+
+**Algorithm Steps:**
+
+1.  **Parse & AST Construction:**
+    *   Use a Markdown parser (e.g., `markdown-it`, `mistune`) to build an Abstract Syntax Tree (AST).
+    *   Traverse the AST, focusing on **heading nodes** (H1, H2, H3...). Treat each heading as the potential start of a new tile.
+    *   **Rule:** A tile is defined by a header and includes all content until the next header **of the same or higher level** (i.e., until the next `##` or `#` when at `##` level).
+
+2.  **Tile Creation & Tree Building:**
+    *   Initialize a stack to track the current hierarchy (like a filesystem path).
+    *   For each header node `H` in the AST:
+        *   Pop from stack until stack[-1].level
